@@ -83,7 +83,7 @@ fn is_utf8(bytes: &[u8]) -> bool {
 }
 
 fn utf16(bytes: &[u8], big_endian: bool) -> String {
-    let units: Vec<u16> = (bytes.chunks_exact(2))
+    let units: Vec<u16> = (bytes.as_chunks::<2>().0.iter())
         .map(|pair| match big_endian {
             true => u16::from_be_bytes([pair[0], pair[1]]),
             false => u16::from_le_bytes([pair[0], pair[1]]),
@@ -99,7 +99,7 @@ fn looks_utf16(bytes: &[u8], big_endian: bool) -> bool {
         return false;
     }
     let high = usize::from(!big_endian);
-    let zeros = (bytes.chunks_exact(2))
+    let zeros = (bytes.as_chunks::<2>().0.iter())
         .filter(|pair| pair[high] == 0)
         .count();
     zeros * 2 > pairs

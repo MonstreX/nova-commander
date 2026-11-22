@@ -90,10 +90,7 @@ impl Run<'_> {
 
     /// A copy under a name that is free; the free space is looked at first.
     fn copy_new(&mut self, source: &VfsPath, path: &VfsPath, size: u64) -> Result<Done, Stopped> {
-        loop {
-            let Some(free) = self.free_space_for(path).filter(|&free| free < size) else {
-                break;
-            };
+        while let Some(free) = self.free_space_for(path).filter(|&free| free < size) {
             let message = format!("not enough free space: {size} bytes needed, {free} free");
             if !self.ask_after_error(path, &message, true)? {
                 return Ok(Done::Skipped);

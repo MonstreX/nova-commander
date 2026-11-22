@@ -288,7 +288,7 @@ fn the_commands_menu_has_the_three_histories() {
     let labels: Vec<&str> = (crate::app::menu::MENUS[2].items.iter())
         .filter_map(|item| match item {
             crate::app::menu::MenuItem::Item { label, key, .. } => {
-                Some(*label).filter(|_| key.starts_with("Alt+F"))
+                key.starts_with("Alt+F").then_some(*label)
             }
             crate::app::menu::MenuItem::Separator => None,
         })

@@ -162,7 +162,7 @@ fn unicode_text(buffer: &[u64]) -> Option<String> {
     let address = usize::try_from(*buffer.get(1)?).ok()?;
     let offset = address.checked_sub(buffer.as_ptr() as usize)?;
     let text = bytes.get(offset..offset.checked_add(length)?)?;
-    let units: Vec<u16> = (text.chunks_exact(2))
+    let units: Vec<u16> = (text.as_chunks::<2>().0.iter())
         .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
         .collect();
     (!units.is_empty()).then(|| String::from_utf16_lossy(&units))

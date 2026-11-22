@@ -62,10 +62,7 @@ pub fn processes() -> io::Result<Vec<ProcessRecord>> {
     let base = bytes.as_ptr() as usize;
     let mut records = Vec::new();
     let mut at = 0usize;
-    loop {
-        let Some(record) = bytes.get(at..at + RECORD) else {
-            break;
-        };
+    while let Some(record) = bytes.get(at..at + RECORD) {
         records.push(parse(record, bytes, base));
         let next = usize::try_from(u32_at(record, 0)).unwrap_or(0);
         if next == 0 {
@@ -136,7 +133,7 @@ fn image_name(record: &[u8], bytes: &[u8], base: usize) -> String {
     let Some(text) = bytes.get(start..start.saturating_add(length)) else {
         return String::new();
     };
-    let units: Vec<u16> = (text.chunks_exact(2))
+    let units: Vec<u16> = (text.as_chunks::<2>().0.iter())
         .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
         .collect();
     String::from_utf16_lossy(&units)

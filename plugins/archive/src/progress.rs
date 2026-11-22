@@ -101,11 +101,9 @@ pub fn text(
 ) -> (String, Vec<String>) {
     let percent = percent(done, total);
     let millis = elapsed.as_millis();
-    let speed = if millis == 0 {
-        0
-    } else {
-        u64::try_from(u128::from(done) * 1000 / millis).unwrap_or(u64::MAX)
-    };
+    let speed = (u128::from(done) * 1000)
+        .checked_div(millis)
+        .map_or(0, |speed| u64::try_from(speed).unwrap_or(u64::MAX));
     let sizes = format!(
         "{:>7} / {} @ {:>9}",
         data_size(done, &SIZES),

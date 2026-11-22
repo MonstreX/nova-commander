@@ -71,7 +71,9 @@ fn char_at(line: &[char], pos: i64) -> char {
 fn quote_pairs(quotes: &str) -> Vec<(char, char)> {
     let chars: Vec<char> = quotes.chars().collect();
     chars
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| (pair[0], pair[1]))
         .collect()
 }
@@ -127,7 +129,11 @@ fn double(
     doubles: &[char],
     (before, at, after): (char, char, char),
 ) -> Option<(Kind, i64, [char; 4])> {
-    let four = doubles.chunks_exact(4).find(|four| four.contains(&at))?;
+    let four = doubles
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .find(|four| four.contains(&at))?;
     let pair = [four[0], four[1], four[2], four[3]];
     let [b21, b22, b23, b24] = pair;
     if (at == b21 && after == b22) || (at == b22 && before == b21) {
@@ -145,7 +151,7 @@ fn single(
     options: &Options,
     (before, at): (char, char),
 ) -> Option<(Kind, i64, [char; 4])> {
-    let pairs: Vec<[char; 4]> = (singles.chunks_exact(2))
+    let pairs: Vec<[char; 4]> = (singles.as_chunks::<2>().0.iter())
         .map(|pair| [pair[0], pair[1], NONE, NONE])
         .collect();
     let by = |ch: char, kind: Kind| {

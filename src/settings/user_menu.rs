@@ -118,7 +118,9 @@ pub fn decode(bytes: &[u8], oem: Oem) -> String {
     }
     if let Some(units) = bytes.strip_prefix(b"\xff\xfe") {
         let units: Vec<u16> = units
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
             .collect();
         return String::from_utf16_lossy(&units);

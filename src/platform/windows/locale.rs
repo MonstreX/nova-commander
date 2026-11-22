@@ -413,9 +413,9 @@ mod tests {
         let local = local_time(landing).unwrap();
         assert_eq!((local.year, local.month), (1969, 7));
         assert!(matches!(local.day, 20 | 21));
-        // Before 1601 FILETIME has no value.
-        let too_old = UNIX_EPOCH - Duration::from_secs(400 * 366 * 86_400);
-        assert_eq!(local_time(too_old), None);
+        // Before 1601 FILETIME has no value (and std, since Rust 1.100, no such moment at all).
+        let too_old = UNIX_EPOCH.checked_sub(Duration::from_secs(400 * 366 * 86_400));
+        assert!(too_old.is_none_or(|moment| local_time(moment).is_none()));
     }
 
     #[test]

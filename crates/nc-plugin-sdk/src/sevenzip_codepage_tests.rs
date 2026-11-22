@@ -134,9 +134,15 @@ fn the_imports_are_patched_and_put_back() {
     let ours: Vec<usize> = entries.iter().map(|(_, _, ours)| *ours).collect();
     assert_eq!(now, ours);
     for (function, name) in [
-        (patched_oem_cp as usize, &b"GetOEMCP\0"[..]),
-        (patched_to_wide as usize, b"MultiByteToWideChar\0"),
-        (patched_to_bytes as usize, b"WideCharToMultiByte\0"),
+        (patched_oem_cp as *const () as usize, &b"GetOEMCP\0"[..]),
+        (
+            patched_to_wide as *const () as usize,
+            b"MultiByteToWideChar\0",
+        ),
+        (
+            patched_to_bytes as *const () as usize,
+            b"WideCharToMultiByte\0",
+        ),
     ] {
         let entry = entries.iter().find(|(_, _, ours)| *ours == function);
         let (_, original, _) = entry.unwrap_or_else(|| panic!("{name:?} not patched"));

@@ -57,7 +57,14 @@ fn utf16_by_zeros(bytes: &[u8]) -> Option<Detected> {
     if pairs < 2 {
         return None;
     }
-    let zeros = |side: usize| bytes.chunks_exact(2).filter(|pair| pair[side] == 0).count();
+    let zeros = |side: usize| {
+        bytes
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .filter(|pair| pair[side] == 0)
+            .count()
+    };
     let (even, odd) = (zeros(0), zeros(1));
     let most = pairs * 2 / 3;
     let few = pairs / 10;

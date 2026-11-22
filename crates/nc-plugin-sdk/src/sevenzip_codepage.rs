@@ -193,10 +193,10 @@ unsafe fn patch_slots(base: usize, names: usize, slots: usize, done: &mut Vec<Pa
         let name =
             unsafe { std::ffi::CStr::from_ptr((base + (entry & 0x7FFF_FFFF) + 2) as *const i8) };
         let ours: usize = match name.to_bytes() {
-            b"GetOEMCP" => patched_oem_cp as usize,
-            b"GetACP" => patched_acp as usize,
-            b"MultiByteToWideChar" => patched_to_wide as usize,
-            b"WideCharToMultiByte" => patched_to_bytes as usize,
+            b"GetOEMCP" => patched_oem_cp as *const () as usize,
+            b"GetACP" => patched_acp as *const () as usize,
+            b"MultiByteToWideChar" => patched_to_wide as *const () as usize,
+            b"WideCharToMultiByte" => patched_to_bytes as *const () as usize,
             _ => continue,
         };
         let Some(original) = kernel32(name.to_bytes_with_nul()) else {

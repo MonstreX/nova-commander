@@ -132,7 +132,9 @@ fn profiles(data: &[u8]) -> u16 {
     }
     let length = usize::from(data[11]);
     data[12..]
-        .chunks_exact(4)
+        .as_chunks::<4>()
+        .0
+        .iter()
         .take(length / 4)
         .map(|profile| from_profile(u16::from_be_bytes([profile[0], profile[1]])))
         .fold(0, |found, more| found | more)

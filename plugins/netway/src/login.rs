@@ -202,7 +202,7 @@ async fn log_in(
             continue;
         }
         // "Respond with password to the first prompt".
-        let mut given = Some(password.clone()).filter(|_| ssh.ki_password);
+        let mut given = ssh.ki_password.then(|| password.clone());
         let answered = opened
             .keyboard_interactive(user, async |questions: &Questions| {
                 match given.take().filter(|_| is_password_question(questions)) {

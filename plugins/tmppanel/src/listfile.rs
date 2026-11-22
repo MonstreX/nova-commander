@@ -36,7 +36,7 @@ fn split(bytes: &[u8], read: impl Fn(&[u8]) -> String) -> Vec<String> {
 }
 
 fn utf16(bytes: &[u8], unit: fn([u8; 2]) -> u16) -> String {
-    let units: Vec<u16> = (bytes.chunks_exact(2))
+    let units: Vec<u16> = (bytes.as_chunks::<2>().0.iter())
         .map(|pair| unit([pair[0], pair[1]]))
         .collect();
     String::from_utf16_lossy(&units)
@@ -76,8 +76,18 @@ fn looks_utf16(bytes: &[u8]) -> bool {
         return false;
     }
     let pairs = bytes.len() / 2;
-    let high = bytes.chunks_exact(2).filter(|pair| pair[1] == 0).count();
-    let low = bytes.chunks_exact(2).filter(|pair| pair[0] == 0).count();
+    let high = bytes
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .filter(|pair| pair[1] == 0)
+        .count();
+    let low = bytes
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .filter(|pair| pair[0] == 0)
+        .count();
     high * 2 > pairs && low * 10 < pairs
 }
 

@@ -282,10 +282,7 @@ fn lower(ch: char) -> char {
 pub fn parse(name: &str) -> Option<BreakKey> {
     let mut modifiers = KeyModifiers::NONE;
     let mut rest = name.trim();
-    loop {
-        let Some((head, tail)) = rest.split_once('+').filter(|(head, _)| !head.is_empty()) else {
-            break;
-        };
+    while let Some((head, tail)) = rest.split_once('+').filter(|(head, _)| !head.is_empty()) {
         modifiers |= match head.to_ascii_lowercase().as_str() {
             "ctrl" => KeyModifiers::CONTROL,
             "alt" => KeyModifiers::ALT,

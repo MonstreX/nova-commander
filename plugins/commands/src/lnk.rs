@@ -36,7 +36,7 @@ fn ansi_at(bytes: &[u8], at: usize) -> Option<String> {
 
 /// The NUL-ended UTF-16 string at `at`.
 fn unicode_at(bytes: &[u8], at: usize) -> Option<String> {
-    let units: Vec<u16> = (bytes.get(at..)?.chunks_exact(2))
+    let units: Vec<u16> = (bytes.get(at..)?.as_chunks::<2>().0.iter())
         .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
         .take_while(|&unit| unit != 0)
         .collect();

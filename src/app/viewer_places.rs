@@ -172,7 +172,7 @@ impl Viewer {
             Some(crate::editor::view::Encoding::Utf16Le | crate::editor::view::Encoding::Utf16Be)
         );
         let binary = if utf16 {
-            head.chunks_exact(2).any(|unit| unit == [0, 0])
+            head.as_chunks::<2>().0.contains(&[0, 0])
         } else {
             head.contains(&0)
         };

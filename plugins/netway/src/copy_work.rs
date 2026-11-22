@@ -130,7 +130,7 @@ impl Progress {
     /// The file at hand sent again from its start (a retry): what was counted of it taken back.
     pub(crate) fn restart_file(&self) {
         let counted = self.file_done.swap(0, Ordering::Relaxed);
-        let _ = (self.done).fetch_update(Ordering::Relaxed, Ordering::Relaxed, |done| {
+        let _ = (self.done).try_update(Ordering::Relaxed, Ordering::Relaxed, |done| {
             Some(done.saturating_sub(counted))
         });
     }

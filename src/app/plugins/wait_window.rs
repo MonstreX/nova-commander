@@ -12,11 +12,9 @@ use crate::plugin_host::CallProgress;
 
 /// The window's lines for a call that tells its progress: its plugin's title, the item at hand, how far.
 fn progress_lines(title: String, told: &CallProgress) -> Vec<String> {
-    let count = if told.total > 0 {
-        let percent = told.done.saturating_mul(100) / told.total;
-        format!("{} of {} ({percent}%)", told.done, told.total)
-    } else {
-        format!("{} done", told.done)
+    let count = match told.done.saturating_mul(100).checked_div(told.total) {
+        Some(percent) => format!("{} of {} ({percent}%)", told.done, told.total),
+        None => format!("{} done", told.done),
     };
     let item = Some(told.text.clone()).filter(|text| !text.is_empty());
     std::iter::once(title).chain(item).chain([count]).collect()

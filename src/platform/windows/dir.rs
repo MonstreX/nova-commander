@@ -118,7 +118,9 @@ fn record_name(record: &[u8]) -> Option<OsString> {
     let start = offset_of!(FILE_ID_BOTH_DIR_INFO, FileName);
     let raw = record.get(start..start + length)?;
     let units: Vec<u16> = raw
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
         .collect();
     Some(OsString::from_wide(&units))

@@ -167,7 +167,7 @@ fn whole_characters(code_page: u32, bytes: &[u8]) -> usize {
 /// A double-byte code page: each lead byte takes the byte after it.
 fn whole_double_bytes(lead_bytes: &[u8; 12], bytes: &[u8]) -> usize {
     let is_lead = |byte: u8| {
-        (lead_bytes.chunks_exact(2))
+        (lead_bytes.as_chunks::<2>().0.iter())
             .take_while(|range| range[0] != 0)
             .any(|range| (range[0]..=range[1]).contains(&byte))
     };

@@ -37,7 +37,7 @@ pub(crate) fn not_written(what: &str) -> Error {
 /// (the ANSI code page).
 fn list_text(bytes: &[u8], ansi: &dyn Fn(&[u8]) -> String) -> String {
     if let Some(wide) = bytes.strip_prefix(&[0xFF, 0xFE]) {
-        let units: Vec<u16> = (wide.chunks_exact(2))
+        let units: Vec<u16> = (wide.as_chunks::<2>().0.iter())
             .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
             .collect();
         return String::from_utf16_lossy(&units);

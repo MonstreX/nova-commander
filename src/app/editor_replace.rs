@@ -135,7 +135,7 @@ fn run_all(
         })
         .collect();
     // The last first: each replaced before the ones ahead of it move.
-    found.sort_unstable_by(|one, other| other.0.cmp(&one.0));
+    found.sort_unstable_by_key(|&(at, _)| std::cmp::Reverse(at));
     Ok(found)
 }
 

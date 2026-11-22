@@ -286,7 +286,7 @@ fn utf8(mut data: &[u8], last: bool, out: &mut Vec<char>) -> Vec<u8> {
 
 /// UTF-16 to `out`; returns an odd byte and a high surrogate the block ends with.
 fn utf16(data: &[u8], last: bool, unit: fn([u8; 2]) -> u16, out: &mut Vec<char>) -> Vec<u8> {
-    let mut units: Vec<u16> = (data.chunks_exact(2))
+    let mut units: Vec<u16> = (data.as_chunks::<2>().0.iter())
         .map(|pair| unit([pair[0], pair[1]]))
         .collect();
     let mut kept = data[units.len() * 2..].to_vec();

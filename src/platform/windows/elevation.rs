@@ -100,7 +100,9 @@ pub fn decode_path(bytes: &[u8]) -> Option<PathBuf> {
         return None;
     }
     let units: Vec<u16> = bytes
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
         .collect();
     (!units.contains(&0)).then(|| OsString::from_wide(&units).into())

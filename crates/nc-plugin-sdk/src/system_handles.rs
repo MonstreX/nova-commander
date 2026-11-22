@@ -178,7 +178,7 @@ fn object_text(handle: HANDLE, class: i32) -> Option<String> {
         .checked_sub(buffer.as_ptr() as usize)?;
     let bytes: Vec<u8> = buffer.iter().flat_map(|word| word.to_le_bytes()).collect();
     let text = bytes.get(offset..offset.checked_add(length)?)?;
-    let units: Vec<u16> = (text.chunks_exact(2))
+    let units: Vec<u16> = (text.as_chunks::<2>().0.iter())
         .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
         .collect();
     Some(String::from_utf16_lossy(&units))

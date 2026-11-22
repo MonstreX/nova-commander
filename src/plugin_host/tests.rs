@@ -29,14 +29,14 @@ fn probe_library() -> PathBuf {
     built_library("probe")
 }
 
-/// The library `library` of this workspace's plugins as the build left it: beside the test program or
-/// one folder up.
+/// The library `library` of this workspace's plugins as the build left it: in the nearest folder up from
+/// the test program that has it (`target/debug/deps` held the test programs; since Rust 1.100 they are
+/// under `target/debug/build/<package>/<hash>/out`, the libraries still in `target/debug`).
 fn built_library(library: &str) -> PathBuf {
     let name = platform::libraries::file_name(library);
     let exe = std::env::current_exe().expect("the test program");
-    let deps = exe.parent().expect("its folder");
-    [deps.join(&name), deps.join("..").join(&name)]
-        .into_iter()
+    (exe.ancestors().skip(1))
+        .map(|folder| folder.join(&name))
         .find(|path| path.is_file())
         .expect("the probe is built with the workspace")
 }

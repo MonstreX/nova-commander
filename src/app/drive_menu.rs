@@ -186,10 +186,11 @@ impl App {
                     return self.reopen_drive_menu(side, selected);
                 }
             }
-            KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::ALT) => {
-                if self.drive_menu_hotkey(&menu, ch) {
-                    return;
-                }
+            KeyCode::Char(ch)
+                if !key.modifiers.contains(KeyModifiers::ALT)
+                    && self.drive_menu_hotkey(&menu, ch) =>
+            {
+                return;
             }
             _ => {}
         }

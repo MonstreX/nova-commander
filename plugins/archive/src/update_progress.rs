@@ -26,11 +26,9 @@ pub fn text(
     elapsed: Duration,
 ) -> (String, Vec<String>) {
     let millis = elapsed.as_millis();
-    let speed = if millis == 0 {
-        0
-    } else {
-        u64::try_from(u128::from(at.done) * 1000 / millis).unwrap_or(u64::MAX)
-    };
+    let speed = (u128::from(at.done) * 1000)
+        .checked_div(millis)
+        .map_or(0, |speed| u64::try_from(speed).unwrap_or(u64::MAX));
     let worked = elapsed.as_secs();
     // The whole time as the bytes so far took theirs, never less than the time worked.
     let whole = if at.done == 0 {
@@ -78,11 +76,9 @@ pub fn text(
 /// written of all at the speed, the bar; its percent rounded (`al_round`).
 pub fn delete_text(at: &UpdateAt<'_>, elapsed: Duration) -> (String, Vec<String>) {
     let millis = elapsed.as_millis();
-    let speed = if millis == 0 {
-        0
-    } else {
-        u64::try_from(u128::from(at.done) * 1000 / millis).unwrap_or(u64::MAX)
-    };
+    let speed = (u128::from(at.done) * 1000)
+        .checked_div(millis)
+        .map_or(0, |speed| u64::try_from(speed).unwrap_or(u64::MAX));
     let rounded = if at.total == 0 {
         0
     } else {

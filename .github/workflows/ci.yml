@@ -9,9 +9,15 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
+      # The runner's own temporary folder is a short 8.3 name (C:\Users\RUNNER~1\...), which the tests'
+      # folders do not expect; the job's own one has a long name.
+      - name: Long temporary folder
+        run: |
+          "TEMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+          "TMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
       - uses: actions/checkout@v4
       # The version the project is built and checked with; newer clippy lints are taken up deliberately.
-      - uses: dtolnay/rust-toolchain@1.92.0
+      - uses: dtolnay/rust-toolchain@1.100.0
         with:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
