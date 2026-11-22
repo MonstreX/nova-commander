@@ -321,8 +321,8 @@ Rust trait and the export macro), `src/plugin_host` (finding, loading, adapting)
 
 15. **Stage 5 audited against FAR's sources** (owner, 2026-11-12): 5a's F11 menu to 5d-1 were written without
     reading FAR's sources; `docs/reviews/2026-11-12-stage5-far-audit.md` lists each difference with its file and line in
-    `far-source/` (FarGroup/FarManager, cloned into the project, git-ignored). The owner: «делаем все как FAR,
-    учитывая наши технические особенности архитектуры» - every difference is fixed to FAR's behaviour except
+    `far-source/` (FarGroup/FarManager, cloned into the project, git-ignored). The owner: "everything as FAR does
+    it, given our architecture's technical specifics" - every difference is fixed to FAR's behaviour except
     where the architecture needs it: D1 (a plugin's panel as a `vfs` provider, the program's dialogs and
     transfer engine), D3 / D4 (the screen never waits for a plugin), D5 (dialogs laid out by the program), D6
     (Ctrl+6..9 a plugin's modes only, until the program's own 6-9). D2 (real names handled by the program

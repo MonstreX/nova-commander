@@ -2,7 +2,7 @@
 
 - Date: 2026-11-16
 - Status: accepted (roadmap S6.3; ADR-0012 §7 and ADR-0021 §2 ask for this ADR as the step begins; owner
-  2026-11-16: "по архивам - делаем как в ФАР", archives as FAR does them; owner 2026-11-16 on this ADR:
+  2026-11-16: archives as FAR does them; owner 2026-11-16 on this ADR:
   zip moves to 7z.dll and the `zip` crate goes; the program's package ships 7z.dll as FAR's does)
 
 ## Context
