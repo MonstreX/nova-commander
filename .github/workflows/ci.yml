@@ -10,7 +10,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      # The version the project is built and checked with; newer clippy lints are taken up deliberately.
+      - uses: dtolnay/rust-toolchain@1.92.0
         with:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
