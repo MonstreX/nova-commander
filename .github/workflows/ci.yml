@@ -28,5 +28,12 @@ jobs:
       # The plugins' tests load the plugins laid out beside the debug program.
       - name: Plugins beside the program
         run: cargo run -p xtask -- package target/debug
+      # Three tests check the developer's machine, not the code, and run there with every commit: a
+      # system disk that is not removable (some Azure machines mark their NVMe disk removable) and a
+      # volume without last-access updates (the runner's has them; the watch takes them, as FAR's).
       - name: Tests
-        run: cargo test --workspace
+        run: >-
+          cargo test --workspace --
+          --skip app::drive_actions::tests::del_ins_and_shift_del_leave_a_fixed_disk_alone
+          --skip platform::windows::hotplug::tests::the_system_disk_is_found_and_is_no_hotplug_device
+          --skip platform::windows::watch::tests::a_change_in_a_subfolder_is_not_the_folder_s

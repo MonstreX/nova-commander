@@ -12,7 +12,8 @@ use std::sync::Arc;
 use russh::server::{Auth, Msg, Server as _, Session};
 use russh::{Channel, ChannelId};
 use russh_sftp::protocol::{
-    Attrs, Data, File, FileAttributes, Handle, Name, OpenFlags, Status, StatusCode, Version,
+    Attrs, Data, File, FileAttributes, Handle, Name, OpenFlags, SftpHandle, Status, StatusCode,
+    Version,
 };
 use tokio::sync::Mutex;
 
@@ -369,6 +370,11 @@ pub(crate) fn set_times(path: &Path, attrs: &FileAttributes) -> Result<(), Statu
     (file.and_then(|file| file.set_times(times))).map_err(|error| status(&error))
 }
 
+/// A handle as the server's own key: the text it gave the handle as (russh-sftp 4's handles are bytes).
+fn key(handle: &SftpHandle) -> String {
+    String::from_utf8_lossy(handle.as_bytes()).into_owned()
+}
+
 fn ok(id: u32) -> Status {
     Status {
         id,
@@ -415,17 +421,22 @@ impl russh_sftp::server::Handler for Sftp {
             })
             .collect();
         self.listings.insert(path.clone(), Some(files));
-        Ok(Handle { id, handle: path })
+        Ok(Handle {
+            id,
+            handle: path.into(),
+        })
     }
 
-    async fn readdir(&mut self, id: u32, handle: String) -> Result<Name, Self::Error> {
+    async fn readdir(&mut self, id: u32, handle: SftpHandle) -> Result<Name, Self::Error> {
+        let handle = key(&handle);
         match self.listings.get_mut(&handle).and_then(Option::take) {
             Some(files) => Ok(Name { id, files }),
             None => Err(StatusCode::Eof),
         }
     }
 
-    async fn close(&mut self, id: u32, handle: String) -> Result<Status, Self::Error> {
+    async fn close(&mut self, id: u32, handle: SftpHandle) -> Result<Status, Self::Error> {
+        let handle = key(&handle);
         self.listings.remove(&handle);
         self.files.remove(&handle);
         Ok(ok(id))
@@ -448,17 +459,20 @@ impl russh_sftp::server::Handler for Sftp {
         self.opened += 1;
         let handle = format!("file-{}", self.opened);
         self.files.insert(handle.clone(), file);
-        Ok(Handle { id, handle })
+        Ok(Handle {
+            id,
+            handle: handle.into(),
+        })
     }
 
     async fn read(
         &mut self,
         id: u32,
-        handle: String,
+        handle: SftpHandle,
         offset: u64,
         len: u32,
     ) -> Result<Data, Self::Error> {
-        let file = self.file(&handle)?;
+        let file = self.file(&key(&handle))?;
         file.seek(SeekFrom::Start(offset))
             .map_err(|error| status(&error))?;
         let mut data = vec![0; usize::try_from(len).unwrap_or(0)];
@@ -473,11 +487,11 @@ impl russh_sftp::server::Handler for Sftp {
     async fn write(
         &mut self,
         id: u32,
-        handle: String,
+        handle: SftpHandle,
         offset: u64,
         data: Vec<u8>,
     ) -> Result<Status, Self::Error> {
-        let file = self.file(&handle)?;
+        let file = self.file(&key(&handle))?;
         file.seek(SeekFrom::Start(offset))
             .map_err(|error| status(&error))?;
         file.write_all(&data).map_err(|error| status(&error))?;
@@ -501,8 +515,8 @@ impl russh_sftp::server::Handler for Sftp {
         }
     }
 
-    async fn fstat(&mut self, id: u32, handle: String) -> Result<Attrs, Self::Error> {
-        let meta = (self.file(&handle)?.metadata()).map_err(|error| status(&error))?;
+    async fn fstat(&mut self, id: u32, handle: SftpHandle) -> Result<Attrs, Self::Error> {
+        let meta = (self.file(&key(&handle))?.metadata()).map_err(|error| status(&error))?;
         let attrs = FileAttributes::from(&meta);
         Ok(Attrs { id, attrs })
     }
