@@ -4,6 +4,7 @@ version = "0.1.0-alpha.1"
 edition = "2024"
 license = "MIT"
 description = "A console file manager in the style of FAR Manager"
+repository = "https://github.com/MonstreX/nova-commander"
 
 [workspace]
 members = ["crates/nc-plugin-api", "crates/nc-plugin-sdk", "plugins/probe", "plugins/tmppanel", "plugins/samefolder", "plugins/filecase", "plugins/commands", "plugins/emenu", "plugins/compare", "plugins/proclist", "plugins/network", "plugins/archive", "plugins/netway", "plugins/editcase", "plugins/brackets", "plugins/align", "plugins/autowrap", "plugins/drawline", "xtask"]
