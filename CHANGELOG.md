@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0-alpha.2 - 2026-11-22
+
+- The program's own icon and version information in its executable.
+- A command left running when its screen closed (the program exited with a command in the background, a
+  background command removed) no longer stays behind: what the program waits for ends with it, while
+  what a command started to go on running (`start notepad`) still does.
+- Built with Rust 1.100; the dependencies on their latest versions.
+- Linux (in progress, not released yet): local dates, permissions as far2l shows them, links to folders,
+  change times and folders watched by inotify in the panels.
+- CI on GitHub Actions.
+
 ## 0.1.0-alpha.1 - 2026-11-22
 
 The first public build.

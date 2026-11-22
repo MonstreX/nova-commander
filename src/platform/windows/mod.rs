@@ -22,6 +22,7 @@ mod holders;
 mod hotplug;
 mod input;
 mod interpreter;
+mod job;
 mod library;
 mod link;
 mod locale;

@@ -2633,7 +2633,7 @@ dependencies = [
 
 [[package]]
 name = "nova-commander"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 dependencies = [
  "align",
  "archive",
@@ -2645,6 +2645,7 @@ dependencies = [
  "editcase",
  "emenu",
  "filecase",
+ "libc",
  "memchr",
  "nc-plugin-api",
  "portable-pty",
@@ -2653,6 +2654,7 @@ dependencies = [
  "ratatui",
  "regex",
  "regex-syntax",
+ "rustix",
  "samefolder",
  "serde",
  "serde_json",

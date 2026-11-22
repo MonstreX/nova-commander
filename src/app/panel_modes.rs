@@ -33,7 +33,8 @@ impl ColumnKind {
     fn base_width(self) -> usize {
         match self {
             Self::Name | Self::Extension | Self::Custom(_) | Self::Description => 0,
-            Self::Size | Self::Allocated | Self::Attributes => 6,
+            Self::Size | Self::Allocated => 6,
+            Self::Attributes => crate::platform::files::Attributes::COLUMN_WIDTH,
             Self::Date => 8,
             Self::Time => 5,
             Self::WriteTime | Self::CreationTime | Self::AccessTime | Self::ChangeTime => 14,

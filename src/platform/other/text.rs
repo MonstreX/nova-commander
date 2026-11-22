@@ -1,21 +1,10 @@
 //! Locale and text on every OS but Windows until the port: the user's formats as `std` gives none,
 //! code pages as UTF-8 and none installed, no folding for the fuzzy search.
 
-use std::time::SystemTime;
-
-use super::super::locale::{CodePageInfo, DateFormat, DigitGroups, LocalTime, NumberFormat};
+use super::super::locale::{CodePageInfo, DateFormat, DigitGroups, NumberFormat};
 
 pub fn date_format() -> DateFormat {
     DateFormat::default()
-}
-
-/// Local time comes with the port (the TZ database).
-pub fn from_local_time(_local: LocalTime) -> Option<SystemTime> {
-    None
-}
-
-pub fn local_time(_time: SystemTime) -> Option<LocalTime> {
-    None
 }
 
 /// The short name of `month` (1 .. 12), English as FAR's for a system that names none.

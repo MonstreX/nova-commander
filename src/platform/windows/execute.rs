@@ -9,8 +9,9 @@ use std::ptr::{null, null_mut};
 use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
 use windows_sys::Win32::System::Console::GetConsoleWindow;
 use windows_sys::Win32::System::Threading::{
-    CreateProcessW, GetExitCodeProcess, INFINITE, PROCESS_INFORMATION, PROCESS_NAME_WIN32,
-    QueryFullProcessImageNameW, STARTUPINFOW, WaitForSingleObject,
+    CreateProcessW, EXTENDED_STARTUPINFO_PRESENT, GetExitCodeProcess, INFINITE,
+    PROCESS_INFORMATION, PROCESS_NAME_WIN32, QueryFullProcessImageNameW, STARTUPINFOEXW,
+    STARTUPINFOW, WaitForSingleObject,
 };
 use windows_sys::Win32::UI::Shell::{
     SEE_MASK_CLASSNAME, SEE_MASK_FLAG_NO_UI, SEE_MASK_NO_CONSOLE, SEE_MASK_NOASYNC,
@@ -19,6 +20,7 @@ use windows_sys::Win32::UI::Shell::{
 use windows_sys::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
 use super::interpreter::{find_program, interpreter_cannot_run_in, part_line};
+use super::job::{JobBirth, KillJob};
 use super::program::{is_gui_program, is_program};
 use super::{wide, wide_os};
 use crate::platform::files::Attributes;
@@ -217,18 +219,50 @@ fn attempt(target: &Target, request: &Execution) -> io::Result<i32> {
 fn start_process(target: &Target, request: &Execution) -> io::Result<i32> {
     let mut line = wide(&full_line(target));
     let directory = wide_os(request.dir.as_os_str());
-    let startup = STARTUPINFOW {
-        cb: size_of::<STARTUPINFOW>() as u32,
+    if request.no_wait {
+        let process = create_process(&mut line, &directory, CREATE_NEW_CONSOLE, None)?;
+        return Ok(finish(process, false, None));
+    }
+    // What is waited for is born in a job that dies with this process: the runner killed with its
+    // user screen takes the command along, whenever that happens.
+    let job = KillJob::new();
+    let mut birth = job.as_ref().and_then(KillJob::birth);
+    match create_process(&mut line, &directory, 0, birth.as_mut()) {
+        Ok(process) => Ok(finish(process, true, job)),
+        // A job the system refuses: the command is started untied rather than not at all.
+        Err(_) if birth.is_some() => {
+            let process = create_process(&mut line, &directory, 0, None)?;
+            Ok(finish(process, true, None))
+        }
+        Err(error) => Err(error),
+    }
+}
+
+/// `CreateProcessW` of `line` in `directory`, inside the job of `birth` if one is given; the process's
+/// handle (its thread's is closed).
+pub(super) fn create_process(
+    line: &mut [u16],
+    directory: &[u16],
+    flags: u32,
+    birth: Option<&mut JobBirth>,
+) -> io::Result<HANDLE> {
+    let mut startup = STARTUPINFOEXW {
+        StartupInfo: STARTUPINFOW {
+            cb: size_of::<STARTUPINFOW>() as u32,
+            ..Default::default()
+        },
         ..Default::default()
     };
+    let mut flags = CREATE_DEFAULT_ERROR_MODE | flags;
+    if let Some(birth) = birth {
+        startup.StartupInfo.cb = size_of::<STARTUPINFOEXW>() as u32;
+        startup.lpAttributeList = birth.list();
+        flags |= EXTENDED_STARTUPINFO_PRESENT;
+    }
     let mut process = PROCESS_INFORMATION::default();
-    let console = if request.no_wait {
-        CREATE_NEW_CONSOLE
-    } else {
-        0
-    };
     // SAFETY: `line` is a writable NUL-terminated buffer, as the call requires; `directory` is
-    // NUL-terminated; `startup` and `process` are live and of the right size for the call.
+    // NUL-terminated; `startup` (its attribute list alive in `birth`, its size in `cb`) and `process`
+    // are live and of the right size for the call.
     let started = unsafe {
         CreateProcessW(
             null(),
@@ -236,10 +270,10 @@ fn start_process(target: &Target, request: &Execution) -> io::Result<i32> {
             null(),
             null(),
             0,
-            CREATE_DEFAULT_ERROR_MODE | console,
+            flags,
             null_mut(),
             directory.as_ptr(),
-            &raw const startup,
+            &raw const startup.StartupInfo,
             &raw mut process,
         )
     } != 0;
@@ -248,7 +282,7 @@ fn start_process(target: &Target, request: &Execution) -> io::Result<i32> {
     }
     // SAFETY: the thread's handle is owned here and closed once.
     unsafe { CloseHandle(process.hThread) };
-    Ok(finish(process.hProcess, !request.no_wait))
+    Ok(process.hProcess)
 }
 
 /// The class given to the shell for a file known to be there, so that it does not turn
@@ -308,12 +342,17 @@ fn shell_execute(target: &Target, request: &Execution) -> io::Result<i32> {
     if unsafe { ShellExecuteExW(&mut info) } == 0 {
         return Err(io::Error::last_os_error());
     }
-    Ok(finish(info.hProcess, wait))
+    // The shell starts the process running: what it starts at once may escape the job.
+    let job = (wait && !info.hProcess.is_null())
+        .then(|| KillJob::around(info.hProcess))
+        .flatten();
+    Ok(finish(info.hProcess, wait, job))
 }
 
 /// Waits for a process, unless it has a window of its own (FAR's `after_process_creation`); its handle
-/// is closed.
-fn finish(process: HANDLE, wait: bool) -> i32 {
+/// is closed. While it is waited for, `job` ties it to this process (the runner killed with its user
+/// screen takes it along); then it is released, so what it left running goes on.
+fn finish(process: HANDLE, wait: bool, job: Option<KillJob>) -> i32 {
     if process.is_null() {
         return 0;
     }
@@ -324,6 +363,9 @@ fn finish(process: HANDLE, wait: bool) -> i32 {
             WaitForSingleObject(process, INFINITE);
             GetExitCodeProcess(process, &mut code);
         }
+    }
+    if let Some(job) = job {
+        job.release();
     }
     // SAFETY: `process` is owned here and closed once.
     unsafe { CloseHandle(process) };

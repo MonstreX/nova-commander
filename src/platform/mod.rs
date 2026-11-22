@@ -1,8 +1,9 @@
 //! The OS layer (ADR-0004 §1, ADR-0012 §2): everything that depends on the operating system, split by
 //! subsystem. Every public type is the same on every OS; the implementation is chosen at compile time:
-//! `windows` now, stubs answering "unsupported" elsewhere (`other`) until the port, so the interface
-//! stays portable (`cargo check --target x86_64-unknown-linux-gnu --all-targets`). This is the only
-//! module with `unsafe` (CG-RS-002) and with `cfg(windows)`.
+//! `windows`; `linux` as far as the port has got (S7), the rest of it the stubs answering
+//! "unsupported" (`other`, also every other system's), so the interface stays portable
+//! (`cargo check --target x86_64-unknown-linux-gnu --all-targets`). This is the only module with
+//! `unsafe` (CG-RS-002) and with `cfg(windows)`.
 
 pub mod clipboard;
 pub mod elevation;
@@ -16,12 +17,16 @@ pub mod volumes;
 
 mod date_text;
 
+#[cfg(target_os = "linux")]
+mod linux;
 #[cfg(not(windows))]
 mod other;
 #[cfg(windows)]
 mod windows;
 
-#[cfg(not(windows))]
+#[cfg(target_os = "linux")]
+use linux as os;
+#[cfg(not(any(windows, target_os = "linux")))]
 use other as os;
 #[cfg(windows)]
 use windows as os;

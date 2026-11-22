@@ -5,7 +5,7 @@
 A console file manager in the style of [FAR Manager](https://github.com/FarGroup/FarManager), written in Rust:
 two panels, an embedded terminal, a built-in viewer and editor, native plugins.
 
-> **Alpha.** Version 0.1.0-alpha.1 is the first public build. It is used daily by its author, but expect
+> **Alpha.** Version 0.1.0-alpha.2 is an early public build. It is used daily by its author, but expect
 > rough edges; please report what you find in the issues.
 
 ## Why

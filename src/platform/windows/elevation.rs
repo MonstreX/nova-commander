@@ -26,11 +26,6 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 use windows_sys::Win32::System::Console::GetConsoleWindow;
 use windows_sys::Win32::System::IO::{CancelIoEx, GetOverlappedResult, OVERLAPPED};
-use windows_sys::Win32::System::JobObjects::{
-    AssignProcessToJobObject, CreateJobObjectW, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JobObjectExtendedLimitInformation,
-    SetInformationJobObject,
-};
 use windows_sys::Win32::System::Pipes::{
     ConnectNamedPipe, CreateNamedPipeW, GetNamedPipeClientProcessId, GetNamedPipeServerProcessId,
     PIPE_READMODE_BYTE, PIPE_REJECT_REMOTE_CLIENTS, PIPE_TYPE_BYTE, PIPE_WAIT, WaitNamedPipeW,
@@ -437,7 +432,7 @@ fn image_name(process: HANDLE) -> io::Result<OsString> {
 #[derive(Debug)]
 pub struct HelperProcess {
     process: Owned,
-    _job: Option<Owned>,
+    _job: Option<super::job::KillJob>,
 }
 
 impl HelperProcess {
@@ -487,31 +482,9 @@ pub fn start_helper(arguments: &str) -> io::Result<HelperProcess> {
         return Err(io::Error::from(io::ErrorKind::NotFound));
     }
     let process = Owned(info.hProcess);
-    let job = kill_with_the_program(&process);
+    // `None` when the system does not allow it: then only the closing pipe ends the helper.
+    let job = super::job::KillJob::around(process.0);
     Ok(HelperProcess { process, _job: job })
-}
-
-/// `None` when the system does not allow it: then only the closing pipe ends the helper.
-fn kill_with_the_program(process: &Owned) -> Option<Owned> {
-    // SAFETY: no attributes and no name.
-    let job = unsafe { CreateJobObjectW(null(), null()) };
-    if job.is_null() {
-        return None;
-    }
-    let job = Owned(job);
-    let mut limits = JOBOBJECT_EXTENDED_LIMIT_INFORMATION::default();
-    limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-    // SAFETY: `job` is live; `limits` is of the size given.
-    let set = unsafe {
-        SetInformationJobObject(
-            job.0,
-            JobObjectExtendedLimitInformation,
-            (&raw const limits).cast(),
-            size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
-        )
-    };
-    // SAFETY: both handles are live.
-    (set != 0 && unsafe { AssignProcessToJobObject(job.0, process.0) } != 0).then_some(job)
 }
 
 #[cfg(test)]

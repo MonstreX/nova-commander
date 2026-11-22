@@ -1,22 +1,12 @@
 //! The files' stubs: what `std` does the same everywhere is done, the rest is unsupported.
 
-use std::fs::Metadata;
 use std::io;
 use std::path::{Path, PathBuf};
 
 use super::unsupported;
-use crate::platform::files::{Attributes, DirectoryRecord, WatchFlags};
 
 /// Unix file systems tell names apart by case (macOS's usually do not; the port decides per volume).
 pub const NAMES_DIFFER_BY_CASE: bool = true;
-
-/// Hidden is a leading dot on Unix; there is no "system".
-pub fn attributes(path: &Path, metadata: &Metadata) -> Attributes {
-    let hidden = path
-        .file_name()
-        .is_some_and(|name| name.to_string_lossy().starts_with('.'));
-    Attributes::from_flags(hidden, metadata.is_dir(), metadata.is_symlink())
-}
 
 pub fn compare_names(a: &str, b: &str) -> std::cmp::Ordering {
     a.cmp(b)
@@ -40,10 +30,6 @@ pub fn open_past_cache(_path: &Path) -> io::Result<std::fs::File> {
 
 pub fn read_security(_path: &Path) -> io::Result<crate::platform::files::SecurityDescriptor> {
     unsupported()
-}
-
-pub fn change_time(_path: &Path, _follow: bool) -> Option<std::time::SystemTime> {
-    None
 }
 
 pub fn reset_security(_path: &Path) -> io::Result<()> {
@@ -74,15 +60,6 @@ pub fn copy_link(_source: &Path, _destination: &Path) -> io::Result<()> {
     unsupported()
 }
 
-/// No one pass of its own here: the listing reads the folder through `std::fs`.
-pub fn read_directory(
-    _dir: &Path,
-    _cancel: &std::sync::atomic::AtomicBool,
-    _found: &mut dyn FnMut(DirectoryRecord),
-) -> io::Result<()> {
-    unsupported()
-}
-
 /// Whether `name` is one name in a folder.
 pub fn is_plain_name(name: &str) -> bool {
     !matches!(name, "" | "." | "..") && !name.contains(['/', '\0'])
@@ -101,14 +78,6 @@ pub fn reparse_tag(_path: &Path) -> Option<u32> {
 /// A folder description file is looked for by the system's wildcards: none on other systems yet.
 pub fn first_file_like(_folder: &Path, _pattern: &str) -> Option<std::ffi::OsString> {
     None
-}
-
-pub fn file_identity(_path: &Path) -> io::Result<(u32, u64)> {
-    unsupported()
-}
-
-pub fn open_file_identity(_file: &std::fs::File) -> io::Result<(u32, u64)> {
-    unsupported()
 }
 
 pub fn link_target(link: &Path) -> io::Result<PathBuf> {
@@ -143,15 +112,6 @@ pub fn replace_file(
     _replacement: &Path,
 ) -> Result<(), crate::platform::files::Replaced> {
     Err(crate::platform::files::Replaced::Untouched)
-}
-
-pub fn name_count(_path: &Path) -> io::Result<u32> {
-    unsupported()
-}
-
-/// Change notifications come with the port (inotify, FSEvents); until then panels refresh on Ctrl+R.
-pub fn watch_dir(_dir: &Path, _flags: std::sync::Arc<WatchFlags>) -> io::Result<()> {
-    unsupported()
 }
 
 pub fn may_be_held(_error: &io::Error) -> bool {

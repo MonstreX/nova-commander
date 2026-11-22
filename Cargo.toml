@@ -1,6 +1,6 @@
 [package]
 name = "nova-commander"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 edition = "2024"
 license = "MIT"
 description = "A console file manager in the style of FAR Manager"
@@ -25,6 +25,12 @@ serde_json = "1.0.154"
 # The view core's cells as the screen draws them (ADR-0025); the version `ratatui` and `vt100` use.
 unicode-width = "0.2.3"
 vt100 = "0.18.1"
+
+# The port's system calls (ADR-0029): `rustix` (already in the tree through crossterm), `libc` only
+# for what it lacks (local time).
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.191"
+rustix = { version = "1.1.6", features = ["event", "fs"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Time", "Win32_Globalization", "Win32_Storage_FileSystem", "Win32_Security", "Win32_Security_Authorization", "Win32_Security_Authentication_Identity", "Win32_UI_Input_KeyboardAndMouse", "Win32_NetworkManagement_WNet", "Win32_UI_WindowsAndMessaging", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell", "Win32_System_Console", "Win32_System_Registry", "Win32_System_IO", "Win32_System_Ioctl", "Win32_Devices_DeviceAndDriverInstallation", "Win32_Graphics_Gdi", "Win32_Graphics_Dwm", "Win32_Storage_Vhd", "Win32_Storage_IscsiDisc", "Win32_NetworkManagement_NetManagement", "Win32_System_SystemInformation", "Win32_System_Power", "Win32_System_WindowsProgramming", "Win32_System_Pipes", "Win32_System_JobObjects", "Win32_System_RestartManager", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Diagnostics_Debug","Win32_System_LibraryLoader", "Win32_System_Environment"] }

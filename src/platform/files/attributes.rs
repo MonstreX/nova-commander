@@ -1,6 +1,6 @@
 //! The attribute model: what the panels ask of an entry (hidden, system, a folder, a link) the same way on
 //! every OS, worked out per OS when the entry is read. The OS's own bits stay inside for the columns
-//! and dialogs that show them (FAR's attribute letters on Windows; the mode on Unix with the port).
+//! and dialogs that show them (FAR's attribute letters on Windows; the mode on Unix, as far2l shows it).
 
 /// An entry's attributes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -9,9 +9,34 @@ pub struct Attributes {
     system: bool,
     directory: bool,
     link: bool,
+    /// A link whose target is gone (far2l's `FILE_ATTRIBUTE_BROKEN`).
+    broken: bool,
     /// Windows' `FILE_ATTRIBUTE_*` bits; 0 where the OS has none.
     windows: u32,
+    /// Unix's `st_mode`, the kind of file and the permission bits; 0 where the OS has none.
+    mode: u32,
 }
+
+/// The kinds of file in a Unix mode (`S_IFMT` and its values, stat(2)) with far2l's letter for each
+/// (`FormatStr_Attribute`); a link to a folder is `l` too.
+const MODE_KIND: u32 = 0o170_000;
+const MODE_KIND_LETTERS: [(u32, char); 6] = [
+    (0o020_000, 'c'),
+    (0o060_000, 'b'),
+    (0o010_000, 'p'),
+    (0o140_000, 's'),
+    (MODE_LINK, 'l'),
+    (0o040_000, 'd'),
+];
+const MODE_LINK: u32 = 0o120_000;
+
+/// The permission bits in `ls`'s order: owner, group, others, each read, write and run; set-user-ID,
+/// set-group-ID and sticky show in a run place (`s`/`S`, `t`/`T`).
+const MODE_TRIADS: [(u32, u32, char); 3] = [
+    (0o700, 0o4000, 's'),
+    (0o070, 0o2000, 's'),
+    (0o007, 0o1000, 't'),
+];
 
 /// Letters in the order of FAR's attribute column (`far/fileattr.cpp`, mostly as in Windows UI).
 const ATTRIBUTE_LETTERS: [(char, u32); 22] = [
@@ -125,6 +150,10 @@ const NORMAL: u32 = 0x0000_0080;
 const REPARSE_POINT: u32 = 0x0000_0400;
 
 impl Attributes {
+    /// The attribute column's width when a mode gives none: FAR's 6 letters; far2l's 10 of a mode
+    /// (`ColumnTypeWidth`).
+    pub const COLUMN_WIDTH: usize = if cfg!(windows) { 6 } else { 10 };
+
     /// From Windows' `FILE_ATTRIBUTE_*` bits.
     pub fn from_windows_bits(bits: u32) -> Self {
         Self {
@@ -133,16 +162,20 @@ impl Attributes {
             directory: bits & DIRECTORY != 0,
             link: bits & REPARSE_POINT != 0,
             windows: bits,
+            ..Self::default()
         }
     }
 
-    /// From what every OS tells (Unix: hidden is a leading dot; there is no "system").
+    /// From a Unix entry's own mode (a link's, not its target's): hidden is a leading dot, there is no
+    /// "system"; a link is a folder when it leads to one, `broken` when what it leads to is gone.
     #[cfg(not(windows))]
-    pub fn from_flags(hidden: bool, directory: bool, link: bool) -> Self {
+    pub fn from_mode(mode: u32, hidden: bool, directory: bool, broken: bool) -> Self {
         Self {
             hidden,
             directory,
-            link,
+            link: mode & MODE_KIND == MODE_LINK,
+            broken,
+            mode,
             ..Self::default()
         }
     }
@@ -214,8 +247,12 @@ impl Attributes {
         self.windows
     }
 
-    /// FAR's attribute column: the letters of the set attributes, at most `width` of them.
+    /// FAR's attribute column: the letters of the set attributes, at most `width` of them; a Unix mode
+    /// as far2l's `ls`-like ten (`drwxr-xr-x`, `B` first for a broken link).
     pub fn letters(self, width: usize) -> String {
+        if self.mode != 0 {
+            return self.mode_letters().chars().take(width).collect();
+        }
         let bits = if self.windows == 0 {
             NORMAL
         } else {
@@ -227,6 +264,30 @@ impl Attributes {
             .map(|(letter, _)| *letter)
             .take(width)
             .collect()
+    }
+
+    /// far2l's `FormatStr_Attribute` of a Unix mode.
+    fn mode_letters(self) -> String {
+        let kind = MODE_KIND_LETTERS
+            .iter()
+            .find(|(bits, _)| self.mode & MODE_KIND == *bits)
+            .map_or('-', |(_, letter)| *letter);
+        let mut letters = String::with_capacity(10);
+        letters.push(if self.broken { 'B' } else { kind });
+        for (triad, special, letter) in MODE_TRIADS {
+            let bits = self.mode & triad;
+            // The triad's read, write and run bits, highest first (0o4, 0o2, 0o1 shifted to its place).
+            let unit = triad / 7;
+            letters.push(if bits & (4 * unit) != 0 { 'r' } else { '-' });
+            letters.push(if bits & (2 * unit) != 0 { 'w' } else { '-' });
+            letters.push(match (bits & unit != 0, self.mode & special != 0) {
+                (true, true) => letter,
+                (true, false) => 'x',
+                (false, true) => letter.to_ascii_uppercase(),
+                (false, false) => '-',
+            });
+        }
+        letters
     }
 }
 
@@ -266,9 +327,40 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn flags_say_the_same_on_every_os() {
-        let dot_file = Attributes::from_flags(true, false, false);
+        let dot_file = Attributes::from_mode(0o100_644, true, false, false);
         assert!(dot_file.is_hidden());
         assert!(!dot_file.is_system() && !dot_file.is_directory() && !dot_file.is_link());
-        assert_eq!(dot_file.letters(6), "N");
+        assert!(
+            !dot_file.is_read_only(),
+            "who may delete is the folder's business"
+        );
+        assert_eq!(dot_file.letters(10), "-rw-r--r--");
+        let link = Attributes::from_mode(0o120_777, false, true, false);
+        assert!(link.is_link() && link.is_directory());
+        assert_eq!(link.letters(10), "lrwxrwxrwx");
+    }
+
+    #[test]
+    fn a_unix_mode_is_shown_as_far2l_shows_it() {
+        let mode = |mode| Attributes {
+            mode,
+            ..Attributes::default()
+        };
+        assert_eq!(mode(0o040_755).letters(10), "drwxr-xr-x");
+        assert_eq!(mode(0o041_777).letters(10), "drwxrwxrwt");
+        assert_eq!(mode(0o041_776).letters(10), "drwxrwxrwT");
+        assert_eq!(mode(0o106_644).letters(10), "-rwSr-Sr--");
+        assert_eq!(mode(0o106_755).letters(10), "-rwsr-sr-x");
+        assert_eq!(mode(0o020_620).letters(10), "crw--w----");
+        assert_eq!(mode(0o060_660).letters(10), "brw-rw----");
+        assert_eq!(mode(0o010_600).letters(10), "prw-------");
+        assert_eq!(mode(0o140_777).letters(10), "srwxrwxrwx");
+        assert_eq!(mode(0o100_000).letters(10), "----------");
+        assert_eq!(mode(0o100_644).letters(4), "-rw-");
+        let broken = Attributes {
+            broken: true,
+            ..mode(0o120_777)
+        };
+        assert_eq!(broken.letters(10), "Brwxrwxrwx");
     }
 }
