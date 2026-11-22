@@ -1,0 +1,2 @@
+# rustfmt configuration (protected by codeguard). Edition must match Cargo.toml.
+edition = "2024"

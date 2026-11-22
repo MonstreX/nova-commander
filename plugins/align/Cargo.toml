@@ -1,0 +1,13 @@
+[package]
+name = "align"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Align: the editor's block reformatted at a right margin, or justified"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }

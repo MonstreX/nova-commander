@@ -1,0 +1,16 @@
+[package]
+name = "tmppanel"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "The temporary panel: files from different folders on one panel"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }
+
+[dev-dependencies]
+tempfile = "3.27.0"

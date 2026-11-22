@@ -1,0 +1,13 @@
+[package]
+name = "autowrap"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "AutoWrap: lines typed past the right margin wrapped in the editor"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }

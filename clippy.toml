@@ -1,0 +1,5 @@
+# Clippy configuration (protected by codeguard). Thresholds for the warn-level complexity check.
+cognitive-complexity-threshold = 15
+too-many-lines-threshold = 80
+# unwrap() is acceptable in tests; production code must handle errors (clippy::unwrap_used).
+allow-unwrap-in-tests = true

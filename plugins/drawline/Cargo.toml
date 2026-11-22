@@ -1,0 +1,13 @@
+[package]
+name = "drawline"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "DrawLine: single and double lines drawn in the editor with Shift and the arrows"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }

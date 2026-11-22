@@ -1,0 +1,33 @@
+target/
+# FAR Manager's sources for reference (not part of the build): git clone https://github.com/FarGroup/FarManager far-source
+far-source/
+# NetBox's sources for its behaviour only (GPL: none of its code is taken; S6.4-S6.6):
+# git clone --depth 1 https://github.com/michaellukashov/Far-NetBox netbox-source
+netbox-source/
+# Colorer's sources (MIT: its engine is ported, ADR-0024) and its schemes (LGPL: shipped as data):
+# git clone --depth 1 https://github.com/colorer/Colorer-library colorer-source
+# git clone --depth 1 https://github.com/colorer/FarColorer farcolorer-source
+# git clone --depth 1 https://github.com/colorer/Colorer-schemes colorer-schemes
+colorer-source/
+farcolorer-source/
+colorer-schemes/
+
+# Local working files (e2e stands, scratch scripts); never committed
+tmp/
+
+# Local only, not the project's (owner 2026-11-22): the agents' settings, the quality gate's tool and
+# configuration (its architecture, decisions and diagrams stay: they document the project), the internal
+# plan, debt and reviews.
+.agents/
+.claude/
+.codex/
+AGENTS.md
+CLAUDE.md
+/.codeguard/*
+!/.codeguard/architecture.md
+!/.codeguard/decisions/
+!/.codeguard/diagrams/
+docs/reviews/
+docs/roadmap.md
+docs/tech-debt.md
+docs/README.md

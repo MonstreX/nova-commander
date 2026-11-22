@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The syntax schemes the program reads (ADR-0024): Colorer's base, its prototypes and the files of
+     the auto folder. Schemes may be changed or added here as FarColorer's users do. -->
+<catalog>
+    <hrc-sets>
+        <location link="proto.hrc"/>
+        <location link="auto"/>
+    </hrc-sets>
+</catalog>

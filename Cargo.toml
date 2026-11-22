@@ -1,0 +1,50 @@
+[package]
+name = "nova-commander"
+version = "0.1.0-alpha.1"
+edition = "2024"
+license = "MIT"
+description = "A console file manager in the style of FAR Manager"
+
+[workspace]
+members = ["crates/nc-plugin-api", "crates/nc-plugin-sdk", "plugins/probe", "plugins/tmppanel", "plugins/samefolder", "plugins/filecase", "plugins/commands", "plugins/emenu", "plugins/compare", "plugins/proclist", "plugins/network", "plugins/archive", "plugins/netway", "plugins/editcase", "plugins/brackets", "plugins/align", "plugins/autowrap", "plugins/drawline", "xtask"]
+
+[dependencies]
+nc-plugin-api = { path = "crates/nc-plugin-api" }
+# The viewer's line index (ADR-0015 addendum 2026-11-13: a vectorised byte search; regex's own).
+memchr = "2.8.3"
+portable-pty = "0.9.0"
+ratatui = "0.30.2"
+regex = { version = "1.13.1", default-features = false, features = ["std", "unicode", "perf"] }
+# The Unicode categories of Colorer's regular expressions (ADR-0024); the same crate `regex` builds on.
+regex-syntax = { version = "0.8.11", default-features = false, features = ["std", "unicode"] }
+# Colorer's HRC grammars (ADR-0024); the workspace's for NetWay's WebDAV already.
+quick-xml = "0.42.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+# The view core's cells as the screen draws them (ADR-0025); the version `ratatui` and `vt100` use.
+unicode-width = "0.2.3"
+vt100 = "0.18.1"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Time", "Win32_Globalization", "Win32_Storage_FileSystem", "Win32_Security", "Win32_Security_Authorization", "Win32_Security_Authentication_Identity", "Win32_UI_Input_KeyboardAndMouse", "Win32_NetworkManagement_WNet", "Win32_UI_WindowsAndMessaging", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell", "Win32_System_Console", "Win32_System_Registry", "Win32_System_IO", "Win32_System_Ioctl", "Win32_Devices_DeviceAndDriverInstallation", "Win32_Graphics_Gdi", "Win32_Graphics_Dwm", "Win32_Storage_Vhd", "Win32_Storage_IscsiDisc", "Win32_NetworkManagement_NetManagement", "Win32_System_SystemInformation", "Win32_System_Power", "Win32_System_WindowsProgramming", "Win32_System_Pipes", "Win32_System_JobObjects", "Win32_System_RestartManager", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Diagnostics_Debug","Win32_System_LibraryLoader", "Win32_System_Environment"] }
+
+[dev-dependencies]
+# The plugin the tests load: its library is built before the tests run (ADR-0016).
+probe = { path = "plugins/probe" }
+# The temporary panel, loaded by the tests as it is shipped.
+tmppanel = { path = "plugins/tmppanel" }
+# FAR's first plugins, loaded by the tests as they are shipped (P6).
+samefolder = { path = "plugins/samefolder" }
+filecase = { path = "plugins/filecase" }
+commands = { path = "plugins/commands" }
+emenu = { path = "plugins/emenu" }
+compare = { path = "plugins/compare" }
+# The archives (S6), loaded by the tests as shipped; its zip helpers make the tests' archives.
+archive = { path = "plugins/archive" }
+# FAR's editor plugins (S2d.7), loaded by the tests as shipped.
+editcase = { path = "plugins/editcase" }
+brackets = { path = "plugins/brackets" }
+align = { path = "plugins/align" }
+autowrap = { path = "plugins/autowrap" }
+drawline = { path = "plugins/drawline" }
+tempfile = "3.27.0"

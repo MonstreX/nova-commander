@@ -1,0 +1,13 @@
+[package]
+name = "probe"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "A plugin the tests load (not shipped)"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }

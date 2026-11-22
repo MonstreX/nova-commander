@@ -1,0 +1,13 @@
+[package]
+name = "emenu"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "EMenu: Explorer's context menu for the files and folders of the panel"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }

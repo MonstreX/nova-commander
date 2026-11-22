@@ -1,0 +1,13 @@
+[package]
+name = "editcase"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "EditCase: the case of the selected text or the word under the cursor in the editor"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }

@@ -1,0 +1,13 @@
+[package]
+name = "brackets"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Brackets: the pair of the bracket under the cursor in the editor, found or marked"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }

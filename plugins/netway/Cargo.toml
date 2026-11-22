@@ -1,0 +1,47 @@
+[package]
+name = "netway"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "NetWay: remote file systems (SFTP, SCP, FTP, WebDAV, S3) after FAR's NetBox (ADR-0023)"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nc-plugin-sdk = { path = "../../crates/nc-plugin-sdk" }
+# SSH and SFTP in pure Rust (Apache-2.0): the `ring` backend, no OpenSSL, no CMake (ADR-0023).
+russh = { version = "0.65.2", default-features = false, features = ["ring", "rsa", "flate2"] }
+russh-sftp = "3.0.1"
+# The plugin's own runtime inside its library: its calls wait on it on the plugin's thread.
+tokio = { version = "1.54.1", features = ["rt-multi-thread", "net", "time", "sync", "macros", "io-util"] }
+# FTP and FTPS (MIT or Apache-2.0) on the plugin's runtime, TLS by rustls with `ring` (ADR-0023).
+suppaftp = { version = "13.0.0", default-features = false, features = ["tokio", "tokio-rustls-ring", "deprecated"] }
+# The system's trusted roots for FTPS certificates (MIT, Apache-2.0 or ISC).
+rustls-native-certs = "0.8.5"
+# The certificates' fingerprints (Apache-2.0 and ISC; already rustls's and russh's backend).
+ring = "0.17.14"
+# WebDAV over HTTP(S) (MIT or Apache-2.0): rustls given the plugin's own configuration (FTPS's checks).
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls-no-provider", "stream", "socks"] }
+# WebDAV's XML (MIT).
+quick-xml = "0.42.0"
+# An upload's body read from what the work writes (MIT).
+tokio-util = { version = "0.7.20", features = ["io"] }
+# WebDAV's Digest authentication (MIT or Apache-2.0) and its compressed answers (MIT or Apache-2.0);
+# both already russh's, so no crate is added.
+md5 = "0.8.1"
+flate2 = "1.1.11"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+# The tests' FTP server inside their process (Apache-2.0, ADR-0023 §4).
+libunftp = { version = "0.25.0", default-features = false, features = ["ring"] }
+unftp-sbe-fs = "0.4.1"
+# The tests' WebDAV server inside their process (Apache-2.0, ADR-0023 §4) and its HTTP server (MIT).
+dav-server = { version = "0.12.0", default-features = false, features = ["localfs"] }
+hyper = { version = "1", features = ["server", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+# The tests' S3 server inside their process (Apache-2.0, ADR-0023 §4).
+s3s = "0.14.0"
+s3s-fs = "0.14.0"

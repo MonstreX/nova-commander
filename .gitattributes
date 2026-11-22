@@ -1,0 +1,2 @@
+# Test keys are read byte for byte (their MACs and armour): never converted to CRLF on checkout.
+plugins/netway/testdata/** -text

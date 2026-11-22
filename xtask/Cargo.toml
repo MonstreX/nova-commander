@@ -1,0 +1,10 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Development tasks: lays out the portable folder (cargo run -p xtask -- package <folder>)"
+publish = false
+
+[dependencies]
+serde_json = "1.0.154"
