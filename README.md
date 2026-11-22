@@ -60,6 +60,9 @@ file attributes, links, elevation, themes.
 Unpack the release archive into a folder you can write to (for example `D:\Programs\NC`; not
 `Program Files`, the settings are kept beside the program) and run `nova-commander.exe`.
 
+The alpha's program is not signed yet, so Windows SmartScreen may warn on its first start ("Windows
+protected your PC"): choose "More info", then "Run anyway".
+
 To start it as FAR's own shortcut does - in the classic console, maximized, with a larger font - make a
 shortcut to `nova-commander.exe`, open its Properties, set "Run" to "Maximized" and choose the font on
 the Font tab.
