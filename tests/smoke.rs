@@ -135,9 +135,10 @@ fn portable_copy_starts_shows_panels_quits_and_saves_settings() {
         .unwrap();
     let mut command = CommandBuilder::new(&exe);
     command.cwd(start_dir.path());
-    // A PATH of this start only (not the one in the registry): commands must see it.
-    let path = std::env::var("PATH").unwrap_or_default();
-    command.env("PATH", format!("{PATH_MARKER};{path}"));
+    // A PATH of this start only (not the one in the registry): commands must see it. The system's
+    // folders only after the marker: a long PATH (a CI runner's) would scroll the marker off the screen.
+    let root = std::env::var("SystemRoot").unwrap_or_else(|_| "C:\\Windows".to_string());
+    command.env("PATH", format!("{PATH_MARKER};{root}\\system32;{root}"));
     let mut child = pair.slave.spawn_command(command).unwrap();
     drop(pair.slave);
     let (exit_sender, exit) = mpsc::channel();
