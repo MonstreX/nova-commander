@@ -63,6 +63,9 @@ const TOO_SMALL: [u32; 3] = [0xC000_0004, 0x8000_0005, 0xC000_0023];
 const NAME_WAIT: Duration = Duration::from_millis(100);
 /// A disk file's name, which no pipe's wait holds, is waited for longer on a busy machine.
 const DISK_NAME_WAIT: Duration = Duration::from_secs(1);
+/// The file's kind (`GetFileType`, which no pipe's wait holds either) and the thread's start, as long:
+/// FAR's 100 ms for the whole thread made a busy machine's pipe "unknown" for good.
+const KIND_WAIT: Duration = Duration::from_secs(1);
 
 /// One entry of the system's table.
 struct Entry {
@@ -280,7 +283,7 @@ fn file_name(copied: &Copied, key: (u32, u64)) -> String {
     let Ok(asking) = asking else {
         return String::new();
     };
-    let Ok(kind) = kind_told.recv_timeout(NAME_WAIT) else {
+    let Ok(kind) = kind_told.recv_timeout(KIND_WAIT) else {
         give_up(&state);
         remember_hung(key, FILE_TYPE_UNKNOWN);
         return file_kind(FILE_TYPE_UNKNOWN);
