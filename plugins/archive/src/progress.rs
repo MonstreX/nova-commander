@@ -153,8 +153,11 @@ mod tests {
     fn it_comes_half_a_second_in() {
         let mut progress = Progress::new("a.zip");
         assert_eq!(progress.update("f", 0, 1), None, "not yet");
-        progress.shown_again(Instant::now() - Duration::from_secs(3600));
-        assert!(progress.paused >= Duration::from_secs(3600), "not counted");
+        // A real pause, not an hour back: Windows' Instant counts from the boot, a fresh machine is younger.
+        let since = Instant::now();
+        std::thread::sleep(Duration::from_millis(20));
+        progress.shown_again(since);
+        assert!(progress.paused >= Duration::from_millis(20), "not counted");
         assert!(progress.update("f", 0, 1).is_some(), "due at once");
         assert_eq!(progress.update("f", 0, 1), None, "next in half a second");
     }
