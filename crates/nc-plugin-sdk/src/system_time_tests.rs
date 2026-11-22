@@ -53,5 +53,11 @@ fn a_moments_parts_are_in_their_ranges() {
     let (_, minute_before) = dos_time_of(at - 38 * 10_000_000).expect("converts");
     assert_eq!(minute_before[2], 59);
     assert_eq!(dos_time_of(i64::MAX), None, "past what the system converts");
+    let day = 24 * 3_600 * 10_000_000;
+    assert_eq!(
+        dos_time_of(i64::MAX - day),
+        None,
+        "in 30828 whatever the zone"
+    );
     assert_eq!(dos_time_of(-1), None, "before 1601");
 }

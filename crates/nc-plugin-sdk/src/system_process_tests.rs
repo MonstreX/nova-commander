@@ -66,7 +66,10 @@ impl Drop for Waiting {
 }
 
 fn waiting() -> Waiting {
+    use std::os::windows::process::CommandExt;
+    // Started normal whatever the tests' own class (a CI runner's is below normal, a child inherits it).
     let child = Command::new("ping")
+        .creation_flags(PRIORITY_CLASSES[2].0)
         .args(["-n", "60", "127.0.0.1"])
         .stdout(Stdio::null())
         .stderr(Stdio::null())

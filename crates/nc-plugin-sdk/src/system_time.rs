@@ -7,6 +7,9 @@ use windows_sys::Win32::Globalization::{GetDateFormatW, GetTimeFormatW};
 use windows_sys::Win32::System::SystemInformation::GetSystemTimeAsFileTime;
 use windows_sys::Win32::System::Time::{FileTimeToSystemTime, SystemTimeToTzSpecificLocalTime};
 
+/// The last year of `SYSTEMTIME`'s documented range.
+const LAST_YEAR: u16 = 30_827;
+
 /// A moment in the local time.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct LocalTime {
@@ -129,7 +132,11 @@ pub fn dos_time_of(ticks: i64) -> Option<([u16; 3], [u16; 3])> {
     }
     let mut local = SYSTEMTIME::default();
     // SAFETY: both structures are locals.
-    if unsafe { FileTimeToSystemTime(&raw const local_file, &raw mut local) } == 0 {
+    // Past `SYSTEMTIME`'s last year the conversion still answers in a zone at or behind UTC (the last
+    // moment is in 30828): none in every zone, as on the other systems.
+    if unsafe { FileTimeToSystemTime(&raw const local_file, &raw mut local) } == 0
+        || local.wYear > LAST_YEAR
+    {
         return None;
     }
     Some((

@@ -90,13 +90,15 @@ fn the_library_reads_names_in_the_code_pages_set() {
     let path = folder.path().join("dos.zip");
     std::fs::write(&path, zip_named(b"\x80.txt")).unwrap();
     let library = Library::find(folder.path());
-    library.set_code_pages(437, 1252);
+    // A pair no system has (OEM 437 with the Cyrillic ANSI page), so it differs from the system's
+    // anywhere and the imports are patched: an English system's own 437 / 1252 changes nothing.
+    library.set_code_pages(437, 1251);
     assert_eq!(name_read(&library, &path), "Ç.txt");
     assert!(
         !library.0.patched.borrow().is_empty(),
         "7z.dll's imports changed"
     );
-    library.set_code_pages(866, 1252);
+    library.set_code_pages(866, 1251);
     assert_eq!(name_read(&library, &path), "А.txt");
     let patched = library.0.patched.borrow().len();
     assert!(patched >= 2, "{patched}");
