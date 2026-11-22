@@ -247,9 +247,15 @@ mod tests {
         std::fs::create_dir(&sub).unwrap();
         let watch = watch_dir(temp.path()).unwrap();
         std::fs::write(sub.join("deep.txt"), b"x").unwrap();
-        std::thread::sleep(Duration::from_millis(300));
-        // Writing into `sub` may touch its own times, which the parent sees; nothing more.
-        while watch.take_change() {}
+        // Writing into `sub` may touch its own times, which the parent sees; nothing more. Quiet for
+        // 300 ms first: on a slow machine that change comes later.
+        for _ in 0..20 {
+            std::thread::sleep(Duration::from_millis(300));
+            if !watch.take_change() {
+                break;
+            }
+            while watch.take_change() {}
+        }
         std::fs::write(sub.join("deep.txt"), b"xy").unwrap();
         std::thread::sleep(Duration::from_millis(300));
         assert!(!watch.take_change(), "a file inside a subfolder");

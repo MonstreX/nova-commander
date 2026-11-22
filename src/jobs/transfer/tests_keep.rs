@@ -399,8 +399,11 @@ fn rights_that_shut_the_user_out_still_leave_the_times() {
     assert_eq!(created, at(CREATED));
 }
 
-/// `root/from` passes a rule of its own on to what it holds, `root/to` does not.
+/// `root/from` passes a rule of its own on to what it holds, `root/to` does not. The test's own root
+/// takes its rights by inheritance first, as a user's folder does: a temporary folder whose rights are
+/// not marked inherited (a CI runner's) gives new files rules without the inherited marks.
 fn folders_with_rules(root: &Path) -> (std::path::PathBuf, std::path::PathBuf) {
+    icacls(root, &["/reset"]);
     let (from, to) = (root.join("from"), root.join("to"));
     fs::create_dir(&from).unwrap();
     fs::create_dir(&to).unwrap();
