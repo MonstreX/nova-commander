@@ -1,5 +1,7 @@
 # Nova Commander
 
+<img src="assets/icon/nova-commander.png" alt="Nova Commander's icon" width="128" align="right">
+
 A console file manager in the style of [FAR Manager](https://github.com/FarGroup/FarManager), written in Rust:
 two panels, an embedded terminal, a built-in viewer and editor, native plugins.
 
