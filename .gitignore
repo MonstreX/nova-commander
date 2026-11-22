@@ -15,19 +15,12 @@ colorer-schemes/
 # Local working files (e2e stands, scratch scripts); never committed
 tmp/
 
-# Local only, not the project's (owner 2026-11-22): the agents' settings, the quality gate's tool and
-# configuration (its architecture, decisions and diagrams stay: they document the project), the internal
-# plan, debt and reviews.
+# Local only, not the project's (owner 2026-11-22): the agents' settings, the quality gate with its
+# architecture and decisions, the documents.
 .agents/
 .claude/
 .codex/
+.codeguard/
 AGENTS.md
 CLAUDE.md
-/.codeguard/*
-!/.codeguard/architecture.md
-!/.codeguard/decisions/
-!/.codeguard/diagrams/
-docs/reviews/
-docs/roadmap.md
-docs/tech-debt.md
-docs/README.md
+docs/

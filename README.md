@@ -9,8 +9,7 @@ two panels, an embedded terminal, a built-in viewer and editor, native plugins.
 ## Why
 
 FAR Manager is the reference for keyboard-driven file management: its panels, keys, menus and dialogs are
-what Nova Commander follows, closely enough that FAR's users feel at home from the first minute (the list
-of what is taken and how it differs is in [`docs/far-parity.md`](docs/far-parity.md)). Nova Commander is a
+what Nova Commander follows, closely enough that FAR's users feel at home from the first minute. Nova Commander is a
 new implementation of that idea, not a port: it keeps FAR's way of working and rebuilds the inside around
 what a file manager meets today - huge files, slow network shares, remote servers, modern shells - with a
 portable core meant to run on more than one system.
@@ -71,9 +70,6 @@ the Font tab.
 - `cargo build --release` builds the program; `cargo run -p xtask -- package <folder> --release` lays out
   the portable folder with the plugins, Colorer's grammars and the notices.
 - `cargo test --workspace` runs the tests.
-
-The architecture and the decisions behind it are in [`.codeguard/architecture.md`](.codeguard/architecture.md)
-and [`.codeguard/decisions/`](.codeguard/decisions/).
 
 ## Status
 
